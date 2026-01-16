@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Assistente AI Linux - Edizione Completa</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <link rel="stylesheet" href="style.css">
+     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r161/three.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/three@0.161.0/examples/js/controls/OrbitControls.js"></script>
+     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-php.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-ruby.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
+</head>
+<body>
+
+
+    <!-- Main Interface -->
+    <div class="terminal-header">
+        <div class="logo">
+            <button class="btn menu-btn" onclick="toggleSidebar()" id="menuBtn" title="Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo-icon">
+                🤖
+            </div>
+            <div>
+                <div style="font-size: 1.4rem;">Assistente AI</div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                    <span id="currentMode">Modalità: Auto</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+
+            <button class="btn" onclick="toggleVoice()" id="voiceBtn">
+                <span id="voiceIcon"><i class="fas fa-microphone"></i></span>
+                <span id="voiceText">Voce</span>
+            </button>
+
+
+
+             <button class="btn" onclick="toggleTheme()" id="themeBtn">
+                 <i class="fas fa-moon"></i> Tema
+             </button>
+
+             <button class="btn" onclick="exportChat()" title="Esporta Conversazione">
+                 <i class="fas fa-download"></i>
+             </button>
+
+
+
+              <button class="btn btn-secondary" onclick="newChat()">
+                  <i class="fas fa-plus"></i> Nuova
+              </button>
+
+               <button class="btn btn-secondary" onclick="logout()" title="Logout (Ctrl+L)">
+                   <i class="fas fa-sign-out-alt"></i>
+               </button>
+
+               <button class="btn" onclick="toggleAgents()" id="agentsBtn">
+                   <i class="fas fa-robot"></i> Agenti
+               </button>
+         </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+        <div class="status-item">
+            <span class="status-indicator" id="connectionStatus"></span>
+            <span id="statusText">Connessione...</span>
+        </div>
+        <div class="status-item">
+            <span>Modello:</span>
+            <span id="modelStatus" style="color: var(--secondary);">llama3.2:1b</span>
+        </div>
+        <div class="status-item">
+            <span>Porta:</span>
+            <span>5001</span>
+        </div>
+        <div class="status-item">
+            <span>Utente:</span>
+            <span id="userStatus">Non connesso</span>
+        </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div id="chatContainer">
+        <!-- Messaggi appariranno qui -->
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-area">
+        <div class="input-wrapper">
+            <textarea id="userInput"
+                      placeholder="Scrivi il tuo messaggio qui... (Enter per inviare, Shift+Enter per andare a capo, 🎤 per parlare)"
+                      rows="3"></textarea>
+            <div class="input-buttons">
+            <button class="btn btn-secondary" onclick="sendMessage()" style="padding: 1rem 2rem;">
+                <i class="fas fa-paper-plane"></i> Invia
+            </button>
+                <button class="btn btn-secondary" onclick="toggleQuickActions()" id="toggleActionsBtn" style="margin-left: 0.5rem;">
+                    <i class="fas fa-eye-slash"></i> Nascondi
+                </button>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button class="quick-btn" onclick='insertQuickText("Risolvi l\'equazione di secondo grado: x² + 5x + 6 = 0")'>
+                <i class="fas fa-calculator"></i> Matematica
+            </button>
+            <button class="quick-btn" onclick='insertQuickText("Spiega il sistema fiscale italiano")'>
+                <i class="fas fa-euro-sign"></i> Finanza
+            </button>
+            <button class="quick-btn" onclick='insertQuickText("Scrivi una funzione Python che calcola il fattoriale")'>
+                <i class="fas fa-code"></i> Sviluppo
+            </button>
+            <button class="quick-btn" onclick='insertQuickText("Crea un grafico di y=x^2")'>
+                <i class="fas fa-chart-bar"></i> Grafico
+            </button>
+            <button class="quick-btn" onclick='insertQuickText("Crea un grafico 3D parametrico di x=cos(t), y=sin(t), z=t")'>
+                <i class="fas fa-cube"></i> Sinusoide 3D
+            </button>
+            <button class="quick-btn" onclick="clearChat()">
+                <i class="fas fa-trash"></i> Pulisci
+            </button>
+            <button class="quick-btn" onclick="toggleSpeech()" id="speechToggleBtn">
+                <i class="fas fa-volume-mute"></i> Muto
+            </button>
+            <button class="quick-btn" onclick="testSpeech()">
+                <i class="fas fa-play-circle"></i> Test Voce
+            </button>
+            <button class="quick-btn" onclick="showChartModal()">
+                <i class="fas fa-chart-bar"></i> Grafici
+            </button>
+            <button class="quick-btn always-visible" onclick="showHelp()">
+                <i class="fas fa-question-circle"></i> Aiuto
+            </button>
+
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-robot"></i> Assistente AI</h3>
+            <button onclick="toggleSidebar()" class="sidebar-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="sidebar-content">
+            <div class="sidebar-section">
+                <h4><i class="fas fa-brain"></i> Modalità</h4>
+                 <select id="modeSelect" class="sidebar-select" onchange="changeMode(this.value)">
+                     <option value="auto">🤖 Auto</option>
+                     <option value="math">🐍 Matematica</option>
+                     <option value="finance">💰 Finanza</option>
+                     <option value="develop">💻 Sviluppo</option>
+                 </select>
+            </div>
+
+            <div class="sidebar-section">
+                 <h4><i class="fas fa-server"></i> Modello AI</h4>
+                 <select id="modelSelect" class="sidebar-select" onchange="changeModel(this.value)" onclick="loadModels()">
+                      <option value="llama3.2:1b">llama3.2:1b ⭐</option>
+                 </select>
+             </div>
+
+             <div class="sidebar-section">
+                 <h4><i class="fas fa-palette"></i> Temi</h4>
+                 <select class="sidebar-select" onchange="changeTheme(this.value)" id="themeSelect">
+                     <option value="random">🎲 Scegli Tema Casuale</option>
+                     <option value="dark">🌙 Dark</option>
+                     <option value="light">☀️ Light</option>
+                     <option value="neon">⚡ Neon</option>
+                     <option value="hacker">💻 Hacker</option>
+                     <option value="purple">💜 Purple</option>
+                     <option value="orange">🧡 Orange</option>
+                     <option value="solar-dark">🌞 Solar Dark</option>
+                     <option value="pink">💖 Pink</option>
+                     <option value="military-light">🌿 Military Light</option>
+                     <option value="military-dark">🌑 Military Dark</option>
+                     <option value="red-muted">🍷 Red Muted</option>
+                     <option value="venom-green">🟢 Venom Green</option>
+                     <option value="venom-orange">🟠 Venom Orange</option>
+                     <option value="venom-blue">🔵 Venom Blue</option>
+                     <option value="venom-red">🔴 Venom Red</option>
+                 </select>
+             </div>
+
+             <div class="sidebar-section">
+                 <h4><i class="fas fa-volume-up"></i> Sintesi Vocale</h4>
+                 <button class="sidebar-item" onclick="toggleSpeech()" id="speechBtn">
+                     <i class="fas fa-volume-up"></i> Abilitata
+                 </button>
+             </div>
+
+             <div class="sidebar-section">
+                 <h4><i class="fas fa-tools"></i> Azioni</h4>
+                <button onclick="newChat(); toggleSidebar()" class="sidebar-item">
+                    <i class="fas fa-plus"></i> Nuova Conversazione
+                </button>
+                <button onclick="exportChat(); toggleSidebar()" class="sidebar-item">
+                    <i class="fas fa-download"></i> Esporta Chat
+                </button>
+            </div>
+
+            <div class="sidebar-section">
+                <h4><i class="fas fa-cog"></i> Impostazioni</h4>
+                <button onclick="showSettings(); toggleSidebar()" class="sidebar-item">
+                    <i class="fas fa-edit"></i> Prompt Personalizzati
+                </button>
+                 <button onclick="randomTheme(); toggleSidebar()" class="sidebar-item">
+                     <i class="fas fa-palette"></i> Scegli Tema Casuale
+                 </button>
+            </div>
+
+            <div class="sidebar-section">
+                <h4><i class="fas fa-user"></i> Account</h4>
+                <button onclick="logout()" class="sidebar-item logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay for sidebar -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Agents Modal -->
+    <div id="agentsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-robot"></i> Gestione Agenti</h2>
+                <button class="close-btn" onclick="closeAgentsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="agents-list" id="agentsList"></div>
+                <button onclick="createNewAgent()" class="action-btn">➕ Crea Nuovo Agente</button>
+                <button onclick="refreshAgents()" class="action-btn">🔄 Aggiorna</button>
+                <div class="agent-chat-section" id="agentChatSection" style="display: none;">
+                    <h4>Chat con Agente: <span id="currentAgentName"></span></h4>
+                    <select id="agentModelSelect">
+                        <option value="llama3.3:70b">Llama 3.3 70B (Migliore generale)</option>
+                        <option value="qwen2.5:72b">Qwen 2.5 72B (Avanzato)</option>
+                        <option value="deepseek-coder:33b">DeepSeek Coder 33B (Codice)</option>
+                        <option value="qwen2.5-math:72b">Qwen 2.5 Math 72B (Matematica)</option>
+                        <option value="mistral:7b">Mistral 7B (Veloce)</option>
+                    </select>
+                    <input type="text" id="agentMessageInput" placeholder="Messaggio per l'agente..." onkeypress="handleAgentKeyPress(event)">
+                    <button onclick="sendAgentMessage()">📤 Invia</button>
+                    <div class="agent-messages" id="agentMessages"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> Impostazioni</h2>
+                <button class="close-btn" onclick="closeSettingsModal()">&times;</button>
+            </div>
+
+             <div style="margin-bottom: 1rem;">
+                 <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Matematica:</label>
+                 <textarea id="mathPrompt" rows="3" style="width: 100%; padding: 0.5rem; background: var(--bg-dark); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius);"></textarea>
+             </div>
+             <div style="margin-bottom: 1rem;">
+                 <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Sviluppo:</label>
+                 <textarea id="developPrompt" rows="3" style="width: 100%; padding: 0.5rem; background: var(--bg-dark); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius);"></textarea>
+             </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Finanza:</label>
+                <textarea id="financePrompt" rows="3" style="width: 100%; padding: 0.5rem; background: var(--bg-dark); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius);"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button onclick="savePrompts()" class="btn btn-primary">Salva</button>
+                <button onclick="closeSettings()" class="btn">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app_clean.js?v=2"></script>
+</body>
+</html>

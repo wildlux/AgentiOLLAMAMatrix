@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agente AI e Sistema MCP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .main-content {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .sidebar {
+            width: 300px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .content {
+            flex: 1;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .agenti-list {
+            list-style: none;
+            padding: 0;
+        }
+        .agenti-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background-color: #e9f7fe;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .input-area button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .input-area button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Agente AI e Sistema MCP</h1>
+    </header>
+    <div class="container">
+        <div class="main-content">
+            <div class="sidebar">
+                <h2>Agenti</h2>
+                <div id="agenti-container">
+                    <p>Caricamento agenti...</p>
+                </div>
+                <div class="input-area">
+                    <input type="text" id="nome-agente" placeholder="Nome agente">
+                    <input type="text" id="ruolo-agente" placeholder="Ruolo agente">
+                    <button onclick="aggiungiAgente()">Aggiungi</button>
+                </div>
+            </div>
+            <div class="content">
+                <h2>Stanza</h2>
+                <div id="stanza-container">
+                    <p>Caricamento stanza...</p>
+                </div>
+                <div class="input-area">
+                    <input type="text" id="mittente" placeholder="Mittente">
+                    <input type="text" id="messaggio" placeholder="Messaggio">
+                    <button onclick="inviaMessaggio()">Invia</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Funzione per caricare gli agenti
+        async function caricaAgenti() {
+            const response = await fetch('/api/agenti');
+            const data = await response.json();
+            const container = document.getElementById('agenti-container');
+            container.innerHTML = '<ul class="agenti-list">' + 
+                data.agenti.map(agente => 
+                    `<li>${agente.nome} (${agente.ruolo}) - ${agente.stato}</li>`
+                ).join('') + 
+                '</ul>';
+        }
+
+        // Funzione per caricare la stanza
+        async function caricaStanza() {
+            const response = await fetch('/api/stanza');
+            const data = await response.json();
+            const container = document.getElementById('stanza-container');
+            container.innerHTML = data.stanza.map(evento => 
+                `<div class="message">${evento}</div>`
+            ).join('');
+        }
+
+        // Funzione per aggiungere un agente
+        async function aggiungiAgente() {
+            const nome = document.getElementById('nome-agente').value;
+            const ruolo = document.getElementById('ruolo-agente').value;
+            await fetch('/api/agenti', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nome, ruolo })
+            });
+            document.getElementById('nome-agente').value = '';
+            document.getElementById('ruolo-agente').value = '';
+            caricaAgenti();
+        }
+
+        // Funzione per inviare un messaggio
+        async function inviaMessaggio() {
+            const mittente = document.getElementById('mittente').value;
+            const messaggio = document.getElementById('messaggio').value;
+            await fetch('/api/messaggi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ mittente, messaggio })
+            });
+            document.getElementById('messaggio').value = '';
+            caricaStanza();
+        }
+
+        // Carica gli agenti e la stanza all'avvio
+        caricaAgenti();
+        caricaStanza();
+
+        // Aggiorna la stanza ogni 5 secondi
+        setInterval(caricaStanza, 5000);
+    </script>
+</body>
+</html>

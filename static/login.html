@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Assistente AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        .login-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            margin: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h1>🤖 Assistente AI</h1>
+        <p>Accedi per iniziare</p>
+        <button onclick="loginDemo()">Accedi con Demo</button>
+        <button onclick="loginManual()">Accedi Manuale</button>
+    </div>
+
+    <script>
+        function loginDemo() {
+            window.location.href = 'index.html?api_key=demo_key_123';
+        }
+        function loginManual() {
+            const key = prompt('Inserisci API Key:');
+            if (key) {
+                window.location.href = `index.html?api_key=${encodeURIComponent(key)}`;
+            }
+        }
+    </script>
+</body>
+</html>
