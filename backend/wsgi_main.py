@@ -481,6 +481,7 @@ def application(environ, start_response):
 if __name__ == '__main__':
     # Per test locale
     from wsgiref.simple_server import make_server
-    httpd = make_server('0.0.0.0', 54324, application)
-    print("Avvio server WSGI su 0.0.0.0:54324...")
+    httpd = make_server('0.0.0.0', int(os.getenv('BACKEND_PORT', 54324)), application)
+    port = int(os.getenv('BACKEND_PORT', 54324))
+    print(f"Avvio server WSGI su 0.0.0.0:{port}...")
     httpd.serve_forever()

@@ -1,6 +1,9 @@
 Flask>=2.0.0
 requests>=2.31.0
 PyYAML>=6.0
+Flask-Caching>=2.0.0
+Flask-Limiter>=3.0.0
+Flask-Talisman>=1.0.0
 typing-extensions>=4.0.0
 pygments>=2.10.0
 numpy>=1.21.0

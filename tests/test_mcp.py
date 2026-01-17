@@ -1,51 +1,144 @@
 """
-Test per il sistema MCP.
+Test unitari per la classe MCP (Multi-Model Communication Protocol).
 """
 
-import sys
-import os
-
-# Aggiungi il percorso del modulo al path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
-
-from models.agente_ai import AgenteAI
-from mcp.mcp import MCP
+import pytest
+from src.mcp.mcp import MCP
+from src.models.agente_ai import AgenteAI
 
 
-def test_mcp():
-    """Test per la classe MCP."""
-    print("Test MCP...")
-    
-    # Crea un sistema MCP
+def test_mcp_initialization():
+    """Test inizializzazione MCP"""
     mcp = MCP()
+    assert len(mcp.agenti) == 0
+    assert len(mcp.stanza) == 0
+
+
+def test_mcp_add_agent():
+    """Test aggiunta di un agente al MCP"""
+    mcp = MCP()
+    agente = AgenteAI(nome="Carlo", ruolo="Assistente")
     
-    # Crea alcuni agenti
+    mcp.aggiungi_agente(agente)
+    
+    assert len(mcp.agenti) == 1
+    assert "Carlo" in mcp.agenti
+    assert len(mcp.stanza) == 1
+    assert "Carlo è entrato nella stanza" in mcp.stanza[0]
+
+
+def test_mcp_add_duplicate_agent():
+    """Test aggiunta di un agente duplicato"""
+    mcp = MCP()
     agente1 = AgenteAI(nome="Carlo", ruolo="Assistente")
-    agente2 = AgenteAI(nome="Sofia", ruolo="Esperta")
+    agente2 = AgenteAI(nome="Carlo", ruolo="Esperto")
     
-    # Test aggiungi_agente
     mcp.aggiungi_agente(agente1)
     mcp.aggiungi_agente(agente2)
     
-    assert len(mcp.agenti) == 2, "Numero di agenti non corretto"
-    assert "Carlo" in mcp.agenti, "Agente Carlo non aggiunto"
-    assert "Sofia" in mcp.agenti, "Agente Sofia non aggiunto"
+    assert len(mcp.agenti) == 1  # Solo un agente con lo stesso nome
+
+
+def test_mcp_remove_agent():
+    """Test rimozione di un agente dal MCP"""
+    mcp = MCP()
+    agente = AgenteAI(nome="Carlo", ruolo="Assistente")
     
-    # Test invia_messaggio
-    mcp.invia_messaggio("Carlo", "Ciao Sofia!")
+    mcp.aggiungi_agente(agente)
+    assert len(mcp.agenti) == 1
+    
+    mcp.rimuovi_agente("Carlo")
+    assert len(mcp.agenti) == 0
+    assert len(mcp.stanza) == 2
+    assert "Carlo è uscito dalla stanza" in mcp.stanza[1]
+
+
+def test_mcp_remove_nonexistent_agent():
+    """Test rimozione di un agente inesistente"""
+    mcp = MCP()
+    
+    # Non dovrebbe sollevare eccezioni
+    mcp.rimuovi_agente("Inesistente")
+    assert len(mcp.agenti) == 0
+
+
+def test_mcp_send_message():
+    """Test invio di un messaggio tra agenti"""
+    mcp = MCP()
+    
+    # Aggiungi agenti
+    agente1 = AgenteAI(nome="Carlo", ruolo="Assistente")
+    agente2 = AgenteAI(nome="Maria", ruolo="Esperta")
+    
+    mcp.aggiungi_agente(agente1)
+    mcp.aggiungi_agente(agente2)
+    
+    # Invia messaggio
+    mcp.invia_messaggio("Carlo", "Ciao a tutti!")
     
     # Verifica che il messaggio sia stato aggiunto alla stanza
-    assert len(mcp.stanza) >= 1, "Nessun evento nella stanza"
-    assert any("Carlo: Ciao Sofia!" in evento for evento in mcp.stanza), "Messaggio non trovato nella stanza"
+    assert len(mcp.stanza) == 3  # 2 ingressi + 1 messaggio
+    assert "Carlo: Ciao a tutti!" in mcp.stanza[2]
     
-    # Test rimuovi_agente
-    mcp.rimuovi_agente("Sofia")
+    # Verifica che ci siano le risposte degli altri agenti
+    assert len(mcp.stanza) > 3  # Dovrebbero esserci anche le risposte
+
+
+def test_mcp_send_message_from_nonexistent():
+    """Test invio di un messaggio da un agente inesistente"""
+    mcp = MCP()
     
-    assert len(mcp.agenti) == 1, "Agente Sofia non rimosso"
-    assert "Sofia" not in mcp.agenti, "Agente Sofia ancora presente"
+    # Aggiungi un agente
+    agente = AgenteAI(nome="Carlo", ruolo="Assistente")
+    mcp.aggiungi_agente(agente)
     
-    print("Test MCP completato con successo!\n")
+    # Prova a inviare messaggio da agente inesistente
+    # Non dovrebbe sollevare eccezioni
+    mcp.invia_messaggio("Inesistente", "Ciao")
+    
+    # Non dovrebbe essere aggiunto nulla alla stanza
+    assert len(mcp.stanza) == 1  # Solo l'ingresso di Carlo
+
+
+def test_mcp_room_history():
+    """Test cronologia della stanza"""
+    mcp = MCP()
+    
+    # Aggiungi agenti
+    agente1 = AgenteAI(nome="Carlo", ruolo="Assistente")
+    agente2 = AgenteAI(nome="Maria", ruolo="Esperta")
+    
+    mcp.aggiungi_agente(agente1)
+    mcp.aggiungi_agente(agente2)
+    
+    # Invia messaggi
+    mcp.invia_messaggio("Carlo", "Ciao Maria!")
+    mcp.invia_messaggio("Maria", "Ciao Carlo!")
+    
+    # Verifica cronologia
+    assert len(mcp.stanza) >= 4  # Almeno 2 ingressi + 2 messaggi
+    
+    # Verifica che la cronologia contenga gli eventi principali
+    assert any("è entrato nella stanza" in evento for evento in mcp.stanza)
+    assert any("Carlo: Ciao Maria!" in evento for evento in mcp.stanza)
+    assert any("Maria: Ciao Carlo!" in evento for evento in mcp.stanza)
+
+
+def test_mcp_str_representation():
+    """Test rappresentazione stringa del MCP"""
+    mcp = MCP()
+    
+    agente1 = AgenteAI(nome="Carlo", ruolo="Assistente")
+    agente2 = AgenteAI(nome="Maria", ruolo="Esperta")
+    
+    mcp.aggiungi_agente(agente1)
+    mcp.aggiungi_agente(agente2)
+    
+    str_repr = str(mcp)
+    assert "MCP" in str_repr
+    assert "agenti" in str_repr
+    assert "eventi" in str_repr
 
 
 if __name__ == "__main__":
-    test_mcp()
+    pytest.main([__file__, "-v"])

@@ -1,25 +1,64 @@
 #!/bin/bash
 
-# Stop script for merged system
+# 🛑 Script di arresto per AgentiOLLAMAMatrix
+# Versione: 1.0
+# Data: 2024-01-17
+# Autore: Mistral Vibe
 
-echo "🛑 Fermando il sistema agenti..."
+echo "🛑 Arresto Sistema AgentiOLLAMAMatrix..."
+echo "========================================"
 
-# Ferma backend
-if [ -f backend.pid ]; then
-    BACKEND_PID=$(cat backend.pid)
-    kill $BACKEND_PID 2>/dev/null && echo "✅ Backend fermato" || echo "⚠️ Backend già fermato"
-    rm -f backend.pid
-fi
+# Funzione per fermare un processo
+stop_process() {
+    local name=$1
+    local pattern=$2
+    
+    echo "🔍 Verifica $name..."
+    
+    if pgrep -f "$pattern" > /dev/null; then
+        echo "⚠️  $name è in esecuzione. Arresto..."
+        pkill -f "$pattern"
+        sleep 2
+        
+        if pgrep -f "$pattern" > /dev/null; then
+            echo "❌ Impossibile fermare $name. Uccisione forzata..."
+            pkill -9 -f "$pattern"
+        else
+            echo "✅ $name fermato"
+        fi
+    else
+        echo "✅ $name non è in esecuzione"
+    fi
+}
 
 # Ferma frontend
-if [ -f frontend.pid ]; then
-    FRONTEND_PID=$(cat frontend.pid)
-    kill $FRONTEND_PID 2>/dev/null && echo "✅ Frontend fermato" || echo "⚠️ Frontend già fermato"
-    rm -f frontend.pid
+stop_process "Frontend" "python3.*frontend_server.py"
+
+# Ferma backend
+stop_process "Backend" "python3.*wsgi_main.py"
+
+# Ferma Ollama (opzionale)
+echo ""
+echo "🤖 Vuoi fermare anche Ollama? (s/n)"
+read -r response
+if [[ "$response" =~ ^([sS]|[yY])$ ]]; then
+    stop_process "Ollama" "ollama serve"
+else
+    echo "✅ Ollama lasciato in esecuzione"
 fi
 
-# Ferma processi Python
-pkill -f "wsgi_main.py" 2>/dev/null && echo "✅ Processi backend fermati"
-pkill -f "http.server" 2>/dev/null && echo "✅ Processi frontend fermati"
+# Rimuovi file PID
+if [ -f "backend.pid" ]; then
+    rm backend.pid
+    echo "✅ File backend.pid rimosso"
+fi
 
-echo "✋ Sistema fermato"
+if [ -f "frontend.pid" ]; then
+    rm frontend.pid
+    echo "✅ File frontend.pid rimosso"
+fi
+
+echo ""
+echo "========================================"
+echo "🎉 Sistema AgentiOLLAMAMatrix fermato!"
+echo "========================================"

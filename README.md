@@ -37,10 +37,27 @@ Apri http://localhost:8080
 - **Multi-agente**: Nous Hermes 2 Pro
 
 ## 🎯 Uso
-1. Avvia il sistema con `./start.sh`
-2. Scegli la modalità nel menu laterale
-3. Chat con l'agente specializzato
-4. Usa modelli pesanti per analisi complesse
+1. **Avvia il sistema**: `./start.sh`
+2. **Accedi al frontend**: http://localhost:8080 (reindirizzamento automatico)
+3. **API Backend**: http://localhost:54324
+4. **Autenticazione API**: Usa una delle chiavi demo:
+   - `demo_key_123`
+   - `admin_key_456`
+   - `test_key_789`
+
+## 🔐 Sicurezza
+- **Autenticazione API**: Tutte le route `/api/*` richiedono una chiave API
+- **HTTPS**: Forzato automaticamente con HSTS
+- **Rate Limiting**: 200 richieste/giorno, 50/ora
+- **CORS**: Restrizioni per origini non autorizzate
+- **CSP**: Content Security Policy attiva
+- **Logging**: Audit completo con IP e timestamp
+
+**Esempio di richiesta API:**
+```bash
+curl -X GET http://localhost:54324/api/agenti \
+     -H "X-API-KEY: demo_key_123"
+```
 
 ## 📚 Documentazione
 - [Guida Completa](docs/README.md)
